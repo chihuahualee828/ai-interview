@@ -21,7 +21,7 @@ function fixture(locale='en'){
 }
 test('community answer wins in its language, survives AI regeneration and preserves other locales',()=>{
  const f=fixture();try{
-  writeFileSync('data/answers/Q0001.json',JSON.stringify(ai));
+  writeFileSync('data/answers/Q0001.json',JSON.stringify({...ai,status:'ready'}));
   let card=loadCards()[0];assert.equal(card.answer?.locales.en?.title,'Community explanation');assert.equal(card.answer?.locales.ja?.title,ai.locales.ja.title);assert.equal(card.community?.en?.needsReview,false);assert.equal(card.aiGeneratedAt,ai.generatedAt);
   const regenerated=structuredClone(ai);regenerated.locales.en.title='Regenerated AI answer';writeFileSync('data/answers/Q0001.json',JSON.stringify(regenerated));
   assert.equal(loadCards()[0].answer?.locales.en?.title,'Community explanation');assert.equal(readFileSync('content/community/Q0001/en.md','utf8'),f.markdown);

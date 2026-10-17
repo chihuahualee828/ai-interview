@@ -7,7 +7,7 @@ import {loadCards} from '../src/lib/catalog.ts';
 import {answerContentHash} from '../scripts/lib/answers.ts';
 test('pinned editorial answer is rendered directly, but stale input is not represented as current',()=>{
  const root=process.cwd();const q=JSON.parse(readFileSync('data/questions/Q0001.json','utf8'));const a=JSON.parse(readFileSync('data/answers/Q0001.json','utf8'));
- a.model='codex-source-reviewed';a.inputHash=answerContentHash(q);
+ a.model='codex-source-reviewed';a.inputHash=answerContentHash(q);a.status='ready';
  const temp=mkdtempSync(join(tmpdir(),'recall-catalog-'));
  try{
   for(const dir of ['questions','answers','overrides'])mkdirSync(join(temp,'data',dir),{recursive:true});
