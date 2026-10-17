@@ -17,10 +17,12 @@
     "generate": "tsx scripts/generate.ts",
     "validate": "tsx scripts/validate.ts",
     "test:e2e": "playwright test",
-    "summarize-commit": "tsx scripts/summarize-commit.ts"
+    "summarize-commit": "tsx scripts/summarize-commit.ts",
+    "test:e2e:personal": "playwright test --config playwright.personal.config.ts"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",
+    "@supabase/supabase-js": "2.118.0",
     "astro": "^7.3.3",
     "katex": "^0.16.47",
     "linkedom": "^0.18.12",

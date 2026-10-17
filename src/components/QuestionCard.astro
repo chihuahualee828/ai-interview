@@ -7,6 +7,7 @@ import site from '../config/site.json';
 import {pathFor} from '../lib/i18n';
 import Sources from './Sources.astro';
 import Contribute from './Contribute.astro';
+import PersonalAnswer from './PersonalAnswer.astro';
 import CommunityCredit from './CommunityCredit.astro';
 import {renderCommunityMarkdown} from '../lib/community';
 import {renderAnswerText,renderQuestionTitle} from '../lib/prose';
@@ -52,6 +53,7 @@ const shareUrl=publicSite?new URL(pathFor(locale,card.id),Astro.site).href:new U
   </div> : <div class="pending-answer"><Icon name="book" size={28}/><h3>{t.pendingTitle}</h3><p>{t.pendingDescription}</p></div>}
   <Sources card={card} t={t} locale={locale}/>
  </div>
+ <PersonalAnswer id={card.id} locale={locale} t={t}/>
  <Contribute card={card} locale={locale}/>
  <div class="card-source-strip"><span class="source-dot"></span><a href={card.source.url} target="_blank" rel="noopener noreferrer">{t.originalQuestionLink}<Icon name="external" size={12}/></a><span class="source-separator">/</span><a href={card.source.repo} target="_blank" rel="noopener noreferrer">{t.sourceRepo}</a></div>
 </article>

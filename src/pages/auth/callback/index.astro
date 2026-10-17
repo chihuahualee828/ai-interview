@@ -1,0 +1,8 @@
+---
+import {messages} from '../../../lib/i18n';
+import '../../../styles/app.css';
+const labels = Object.fromEntries(Object.entries(messages).map(([locale,t]) => [locale, t.personal]));
+---
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="referrer" content="no-referrer"/><meta name="robots" content="noindex"/><title>Recall · {messages.en.personal.signIn}</title></head>
+<body><main class="auth-callback" data-labels={JSON.stringify(labels)}><h1>Recall</h1><p id="callback-status" role="status">{messages.en.personal.callbackLoading}</p><a id="callback-return" href={`${import.meta.env.BASE_URL}en/questions/Q0001/`}>{messages.en.personal.back}</a></main><script>import '../../../client/auth-callback';</script></body></html>
