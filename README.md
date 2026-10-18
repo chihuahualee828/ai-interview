@@ -117,3 +117,7 @@ Original project code, documentation, and original contributions are licensed un
 Imported upstream material retains its Apache-2.0 license and original attribution. An unchanged copy of the upstream license is preserved in [licenses/upstream-Apache-2.0.txt](licenses/upstream-Apache-2.0.txt). See [NOTICE](NOTICE) for copyright notices, source attribution, and a description of this project's modifications.
 
 External articles, videos, and other third-party content retain their respective licenses and terms. A link in the upstream README does not make the linked work Apache-2.0, and this project's license does not grant additional rights to it. Dependencies retain their own licenses.
+
+## Optional private answers
+
+GitHub sign-in can sync private personal answers through Supabase while public study and community contributions remain available without login. See [setup, RLS and security checks](docs/personal-answer-sync.md). No private credentials belong in the static site.
