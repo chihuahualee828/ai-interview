@@ -9,26 +9,22 @@
     "multimodal",
     "agents"
   ],
-  "originalAnswer": "- Answer: [Design a Real-Time Voice AI Agent](https://outcomeschool.com/blog/design-a-real-time-voice-ai-agent) and [What is turn-taking in a voice AI agent?](https://outcomeschool.com/blog/what-is-turn-taking-in-a-voice-ai-agent)",
+  "originalAnswer": "- Answer: [Design a Real-Time Voice AI Agent](https://outcomeschool.com/blog/design-a-real-time-voice-ai-agent)",
   "links": [
     {
       "title": "Design a Real-Time Voice AI Agent",
       "url": "https://outcomeschool.com/blog/design-a-real-time-voice-ai-agent"
-    },
-    {
-      "title": "What is turn-taking in a voice AI agent?",
-      "url": "https://outcomeschool.com/blog/what-is-turn-taking-in-a-voice-ai-agent"
     }
   ],
   "source": {
     "repo": "https://github.com/pallavi-shekhar/ai-engineering-interview-questions-company-wise",
-    "commit": "7b86ebe51f7c90c457675b152b21ede6c5cde2e3",
+    "commit": "42e4e135d8cb92f3947116a43e60d5226a071cbc",
     "path": "README.md",
     "lineStart": 365,
     "lineEnd": 367,
-    "url": "https://github.com/pallavi-shekhar/ai-engineering-interview-questions-company-wise/blob/7b86ebe51f7c90c457675b152b21ede6c5cde2e3/README.md#L365-L367"
+    "url": "https://github.com/pallavi-shekhar/ai-engineering-interview-questions-company-wise/blob/42e4e135d8cb92f3947116a43e60d5226a071cbc/README.md#L365-L367"
   },
-  "contentHash": "f67ea11150675fc4d0e7f7d5d9dc3122376a716fa0ff4dbdf1e8338a0808823c",
+  "contentHash": "e0e03420b04b4587bd8411a3f8e2b7dbb4e08b6c2698a807c28afedb4fa9f6c4",
   "id": "Q0091",
   "number": 91,
   "active": true

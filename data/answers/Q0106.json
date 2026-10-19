@@ -1,7 +1,7 @@
 {
   "questionId": "Q0106",
   "inputHash": "571d4be525078b9187cb0c7fa0f0d4f42945abf0dd7ba69ec487f474c1cfd0cf",
-  "status": "stale",
+  "status": "ready",
   "generatedAt": "2026-10-11T02:57:38.746Z",
   "model": "gpt-6.1-sol",
   "promptVersion": "grounded-longform-v2",
