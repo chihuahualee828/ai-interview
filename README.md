@@ -39,7 +39,7 @@ See the [maintenance and deployment guide](docs/maintenance.md) for setup, synch
 .
 ├── .github/
 │   ├── workflows/
-│   │   ├── update-and-deploy.yml      # Scheduled sync, generation, build, and deployment
+│   │   ├── update-and-deploy.yml      # Scheduled dataset import, build, and deployment
 │   │   └── validate-contribution.yml  # PR checks without model secrets or deployment
 │   ├── ISSUE_TEMPLATE/               # Answer contribution forms
 │   ├── DISCUSSION_TEMPLATE/          # Question discussion forms
@@ -91,14 +91,14 @@ Community answers are stored separately from AI output and take priority in thei
 
 The [GitHub Actions workflow](.github/workflows/update-and-deploy.yml) runs daily at **02:17 UTC / 10:17 Taiwan time** and can also be started manually from the Actions tab.
 
-- Tracks the upstream repository and downloads its README only when its content changes or the parser requires a refresh.
-- Refreshes due external sources on a weekly cache cycle and retries pending answer generation, with at most 10 model attempts per run. Changes to the writing specification also queue existing answers for regeneration. New answers must pass language-specific length, structure, and source-link checks.
+- Imports prepared questions, multilingual answers, source metadata and editorial overrides from one pinned commit of [Hikari-Tsai/ai-interview](https://github.com/Hikari-Tsai/ai-interview). The original question provenance remains attributed to pallavi-shekhar/Outcome School.
+- Validates a temporary copy using this fork’s validator, interface translations and community contributions before replacing data. It does not independently refresh source articles, generate answers or change upstream answer statuses.
 - Validates data, runs tests, and commits updated records. When site content changes, it rebuilds and deploys to GitHub Pages if deployment is enabled.
-- For scheduled and manual data updates, one additional LLM call summarizes staged content changes in the commit message. It reuses the existing model/key, sends at most 12,000 characters of change details, and skips metadata-only changes. Missing credentials, timeouts or invalid output fall back to a deterministic message without blocking the update.
+- Uses deterministic commit summaries with `--no-llm`. No LLM API key or model settings are required, and no model requests are made by the workflow.
 
-The page footer shows the latest recorded question sync or answer generation time in **UTC+8**. Reloading the page does not change this timestamp. Push-triggered runs validate and build the site; they skip source synchronization and answer generation.
+The page footer shows the latest recorded question sync or answer generation time in **UTC+8**. Reloading the page does not change this timestamp. Push-triggered runs validate and build the committed dataset; scheduled and manual runs import the latest Hikari snapshot first.
 
-Configure an API key in Actions Secrets, model settings in Actions Variables, and GitHub Pages as described in the [maintenance guide](docs/maintenance.md). The current workflow uses `LLM_MODEL=gpt-6.1-sol` and `LLM_BASE_URL=https://api.openai.com/v1`, with your OpenAI API key in the `LLM_API_KEY` secret. The generator selects GPT-6 reasoning-model parameters automatically; your API project must have model access and available quota.
+Configure GitHub Pages and optional Supabase login as described in the [maintenance guide](docs/maintenance.md). See [dataset synchronization](docs/hikari-data-sync.md) for the import boundary, local override handling and failure recovery. Your fork receives new answers when Hikari publishes them; answers still missing or stale upstream retain that status.
 
 ## Sources and acknowledgments
 

@@ -50,24 +50,23 @@ The frontend makes no model requests. Astro builds static HTML; one shared catal
 
 ```sh
 npm run sync
-npm run generate
 npm run validate
 npm run build
 ```
 
-Sync pins an upstream commit, compares the README blob SHA using Git tree metadata and downloads the Markdown only when it changes. It parses the complete changed Markdown with an AST, then reconciles questions. Parser versions are tracked too; parser upgrades or `npm run sync -- --reparse` reprocess the README even if its blob is unchanged. Exact questions retain IDs across reorder/moves; ambiguous or substantial rewrites get a new ID and retire the old record. A large removal guard blocks suspicious updates. Retired URLs remain available.
+`npm run sync` imports prepared data from one commit of `Hikari-Tsai/ai-interview`, including questions, multilingual answers, source metadata, upstream editorial overrides and the original-source sync timestamp. It no longer parses pallavi-shekhar’s README or fetches linked articles. Existing source attribution is preserved.
 
-Articles are deduplicated by URL, refreshed after a seven-day TTL and checked using ETag/Last-Modified when supported. Only normalized body changes affect answers. Currently supported full-text sources: Outcome School blog and its Substack; video/social links remain preserved but unsupported for transcription. Other domains require adding a reviewed allowlist entry. Private snapshots are not uploaded to public Actions caches. Fresh runners may need to refetch a relevant article body, within the configured fetch budget.
+The importer validates a temporary dataset with this fork’s code and local community contributions before replacing data. Local editorial overrides take priority; untouched imported overrides follow upstream. The application, workflow files, credentials and Supabase personal answers are never imported. See [Hikari dataset sync](hikari-data-sync.md) for supported paths and recovery behavior. The old `--refresh-sources`, `--reparse` and `--allow-removals` sync flags are no longer supported.
 
-`npm run sync -- --refresh-sources` forces a bounded article refresh. `SOURCE_FETCH_LIMIT` defaults to 20 (maximum 200). Missing/failed generation jobs remain resumable even when README has not changed.
+## Optional local generation (not used by deployment)
 
-## Configure a model
+No LLM credentials are needed for dataset import or deployment. The existing `npm run generate` command remains available only for an explicit local generation run; importing upstream data later replaces ordinary generated answer files. The following settings apply only to that optional command.
 
 Set **LLM_API_KEY** (or OPENAI_API_KEY) and **LLM_MODEL** in the job environment. **LLM_BASE_URL** optionally selects an OpenAI-compatible Chat Completions provider; default is `https://api.openai.com/v1`. The chosen model must support JSON output and the configured request parameters. The Astra integration has been verified with live generation; GPT-6.1 Sol is covered by local request-format tests. API access and quota still depend on the configured account.
 
-The workflow currently uses **GPT-6.1 Sol**: `LLM_MODEL=gpt-6.1-sol` and `LLM_BASE_URL=https://api.openai.com/v1`. GPT-6 Astra, GPT-6.1 Sol, GPT-6 Sol, and GPT-6 Luna use `max_completion_tokens` and `reasoning_effort: low` without `temperature`. Other provider model names retain the existing `max_tokens` and `temperature: 0.2` request format. Your OpenAI API project must have model access and available quota; selecting a model in Codex does not configure the workflow's API credentials. Changing `LLM_MODEL` makes existing model-generated answers eligible for regeneration because the model is part of each answer's input hash.
+One supported local configuration is **GPT-6.1 Sol**: `LLM_MODEL=gpt-6.1-sol` and `LLM_BASE_URL=https://api.openai.com/v1`. GPT-6 Astra, GPT-6.1 Sol, GPT-6 Sol, and GPT-6 Luna use `max_completion_tokens` and `reasoning_effort: low` without `temperature`. Other provider model names retain the existing `max_tokens` and `temperature: 0.2` request format. Your OpenAI API project must have model access and available quota; selecting a model in Codex does not configure the workflow's API credentials. Changing `LLM_MODEL` makes existing model-generated answers eligible for regeneration because the model is part of each answer's input hash.
 
-For GPT-6 reasoning models, `LLM_MAX_TOKENS` covers both reasoning and visible output tokens. The long-form default is 16,000 and the maximum is 24,000. Truncated responses, refusals, empty responses, and invalid JSON are recorded as failed jobs for later retry; they do not replace the last successful answer. These cases are tested against a local simulated Chat Completions endpoint. To override the token budget in Actions, set the `LLM_MAX_TOKENS` repository Variable; the workflow defaults to 16,000 when it is unset.
+For GPT-6 reasoning models, `LLM_MAX_TOKENS` covers both reasoning and visible output tokens. The long-form default is 16,000 and the maximum is 24,000. Truncated responses, refusals, empty responses, and invalid JSON are recorded as failed jobs for later retry; they do not replace the last successful answer. These cases are tested against a local simulated Chat Completions endpoint. For an explicit local generator run, set `LLM_MAX_TOKENS` in its environment to override the 16,000-token default.
 
 For local jobs, copy `.env.example` to `.env`, edit it locally, then load it with your preferred environment manager. Alternatively Node supports:
 
@@ -93,10 +92,10 @@ Store `data/overrides/Q0001.json` with `{ "pin": true, "answer": <complete Answe
 
 ## GitHub Actions and Pages
 
-The included workflow supports a daily cron and manual runs. It synchronizes, retries pending generation, tests, type-checks and builds before committing durable data. It deploys that exact build in the same workflow, avoiding the `GITHUB_TOKEN` push-trigger trap. Unchanged scheduled runs skip building and deploying; durable state still passes validation.
+The included workflow supports a daily cron and manual runs. It imports a validated Hikari dataset, tests, type-checks and builds before committing durable data. It never runs answer generation, article refreshes or model-assisted commit summaries. It deploys that exact build in the same workflow, avoiding the `GITHUB_TOKEN` push-trigger trap. Unchanged scheduled runs skip building and deploying; durable state still passes validation.
 
 1. Push this project to your own GitHub repository.
-2. Set repository secret `LLM_API_KEY` and variable `LLM_MODEL` for automatic answers; optionally set `LLM_BASE_URL`.
+2. No LLM secrets or model variables are required. Optional private-answer login uses the public Supabase settings in [personal-answer-sync.md](personal-answer-sync.md).
 3. Select **GitHub Actions** as the Pages build source.
 4. Set variables `SITE_URL` to the Pages host and `BASE_PATH` to `/repository-name` (or `/` for a root/custom-domain site).
 5. Set `DEPLOY_PAGES=true`, or enable deploy in a manual workflow run.
