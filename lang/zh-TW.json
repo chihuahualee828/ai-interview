@@ -116,14 +116,14 @@
     "label": "你的私人答案（最多 30,000 字元）",
     "signIn": "使用 GitHub 登入",
     "signOut": "登出",
-    "save": "立即儲存",
+    "save": "儲存並收起",
     "retry": "重試",
     "refresh": "重新載入已儲存的答案",
     "delete": "刪除我的答案",
     "unavailable": "私人同步目前無法使用。你仍可瀏覽公開題目及貢獻社群答案。",
     "signedOut": "登入即可跨裝置儲存答案。",
     "loading": "載入中…",
-    "ready": "寫下答案，私密儲存。",
+    "ready": "可以開始編輯你的私人筆記。",
     "unsaved": "尚未儲存的變更",
     "saving": "儲存中…",
     "saved": "已儲存",
@@ -139,6 +139,15 @@
     "authFailed": "登入失敗或已取消。請返回題目後重試。",
     "signOutFailed": "無法完成登出。答案已隱藏；連線恢復後請再次登出。",
     "callbackLoading": "正在完成 GitHub 登入…",
-    "back": "返回題目"
+    "back": "返回題目",
+    "edit": "編輯筆記",
+    "cancel": "取消",
+    "empty": "在這裡記錄你的思路、公式與範例。",
+    "editHint": "連按兩下此區塊，或按「編輯筆記」開始。",
+    "shortcuts": "Enter 換行 · 按「儲存並收起」完成 · Esc 取消",
+    "formatHint": "支援 Markdown：**粗體**、清單、`程式碼`。行內公式使用 $x^2$，獨立公式以單獨一行的 $$ 前後包住。",
+    "placeholder": "## 我的思路\n\n- 核心概念\n- 取捨\n\n$O(n \\log n)$",
+    "signingIn": "正在開啟 GitHub…",
+    "signingOut": "正在登出…"
   }
 }
