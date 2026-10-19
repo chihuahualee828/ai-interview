@@ -90,7 +90,7 @@
   "Q0012": {
     "status": "pending",
     "attempts": 6,
-    "inputHash": "89f0db64ae942606c4eae619bd100424aa6a0636fb9c9cc3ee0de894a03398f4",
+    "inputHash": "67541f4b3700726985d1c040643cc432b6ad6e7d5d3709ca9e8fcb85a9877190",
     "sourceHash": "cda978be4cdde7ac96dc7f71441c62511dcd849439043abc28682b290acfb952",
     "updatedAt": "2026-10-18T07:15:50.249Z",
     "error": "Configure LLM_API_KEY (or OPENAI_API_KEY) and LLM_MODEL."
@@ -696,7 +696,7 @@
   "Q0091": {
     "status": "pending",
     "attempts": 2,
-    "inputHash": "9dce1979f5def257e772b965fa470ce83840ad84afb14757fe1ddb7b5e0cd586",
+    "inputHash": "9bc8501bb086f5abdb073c24ef9a69bd9f7f96201106c599cf9d558920fb3f50",
     "sourceHash": "eada7e366ef1d0a5806c8aa811128a5ed731b474b3729e21a8062a123a4b6629",
     "updatedAt": "2026-10-18T07:15:50.328Z",
     "error": "Configure LLM_API_KEY (or OPENAI_API_KEY) and LLM_MODEL."
@@ -855,7 +855,7 @@
   "Q0112": {
     "status": "pending",
     "attempts": 2,
-    "inputHash": "f13b4c800c0a8b260e05746e7df54a5297d326afa5dcf5eee0228dbc25488f05",
+    "inputHash": "959762a6d552e6cbbf90c6e25334d7e7d38365af4b577baaf885631fb6136241",
     "sourceHash": "cda978be4cdde7ac96dc7f71441c62511dcd849439043abc28682b290acfb952",
     "updatedAt": "2026-10-18T07:15:50.343Z",
     "error": "Configure LLM_API_KEY (or OPENAI_API_KEY) and LLM_MODEL."
