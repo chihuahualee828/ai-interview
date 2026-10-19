@@ -2,10 +2,6 @@ name: Update data, validate, build and deploy
 on:
   workflow_dispatch:
     inputs:
-      refresh_sources:
-        description: Force bounded article refresh
-        type: boolean
-        default: false
       deploy:
         description: Deploy configured GitHub Pages site
         type: boolean
@@ -38,36 +34,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Sync pinned README and refresh due sources (weekly TTL)
+      - name: Import prepared data from Hikari
         if: github.event_name != 'push'
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          SOURCE_FETCH_LIMIT: 30
-          FORCE_REFRESH: ${{ inputs.refresh_sources }}
-        run: |
-          if [ "$FORCE_REFRESH" = "true" ]; then
-            npm run sync -- --refresh-sources
-          else
-            npm run sync
-          fi
-      - name: Retry pending generation
-        if: github.event_name != 'push'
-        env:
-          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_MODEL: ${{ vars.LLM_MODEL }}
-          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
-          LLM_MAX_TOKENS: ${{ vars.LLM_MAX_TOKENS || '16000' }}
-          GENERATION_LIMIT: 10
-          GENERATION_SOURCE_FETCH_LIMIT: 30
-        run: npm run generate
+        run: npm run sync
       - name: Detect changed site inputs
         id: changes
         env:
           EVENT_NAME: ${{ github.event_name }}
           EXPLICIT_DEPLOY: ${{ inputs.deploy }}
         run: |
-          if [ "$EVENT_NAME" = "push" ] || [ "$EXPLICIT_DEPLOY" = "true" ] || [ -n "$(git status --porcelain -- data/questions data/answers data/overrides)" ]; then
+          if [ "$EVENT_NAME" = "push" ] || [ "$EXPLICIT_DEPLOY" = "true" ] || [ -n "$(git status --porcelain -- data/questions data/answers data/sources data/overrides data/state/upstream.json)" ]; then
             echo 'should_build=true' >> "$GITHUB_OUTPUT"
           else
             echo 'should_build=false' >> "$GITHUB_OUTPUT"
@@ -85,17 +61,12 @@ jobs:
         run: npm run build
       - name: Commit validated durable data
         if: github.event_name != 'push'
-        env:
-          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_MODEL: ${{ vars.LLM_MODEL }}
-          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/questions data/answers data/sources data/state
+          git add data/questions data/answers data/sources data/overrides data/state
           if ! git diff --cached --quiet; then
-            if ! npm run summarize-commit -- "$RUNNER_TEMP/interview-update-commit.txt"; then
+            if ! npm run summarize-commit -- "$RUNNER_TEMP/interview-update-commit.txt" --no-llm; then
               printf '%s\n' 'chore: update validated interview data' > "$RUNNER_TEMP/interview-update-commit.txt"
             fi
             git commit -F "$RUNNER_TEMP/interview-update-commit.txt"

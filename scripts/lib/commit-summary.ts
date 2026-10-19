@@ -2,14 +2,15 @@ import {execFileSync} from 'node:child_process';
 import {z} from 'zod';
 import {modelParameters} from './model-parameters.ts';
 
-const groups=['questions','answers','sources','state'] as const;
+const groups=['questions','answers','sources','overrides','state'] as const;
 type Group=typeof groups[number];
 type Detail={path:string;status:string;changes:Record<string,{before:string;after:string}>};
 export type Changes={counts:Record<Group,number>;contentChanged:boolean;details:Detail[];omitted:number};
 const fields:Record<Exclude<Group,'state'>,string[]>={
  questions:['original','topic','group','companies','tags','originalAnswer','links','active'],
  answers:['status','locales','sourceUrls'],
- sources:['url','title','status','contentHash']
+ sources:['url','title','status','contentHash'],
+ overrides:['pin','answer']
 };
 function difference(before:unknown,after:unknown){
  const old=before===undefined?'(absent)':JSON.stringify(before),next=after===undefined?'(absent)':JSON.stringify(after);
@@ -20,7 +21,7 @@ function difference(before:unknown,after:unknown){
 }
 export function collectChanges(cwd=process.cwd()):Changes{
  const git=(...args:string[])=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:32*1024*1024});
- const result:Changes={counts:{questions:0,answers:0,sources:0,state:0},contentChanged:false,details:[],omitted:0};
+ const result:Changes={counts:{questions:0,answers:0,sources:0,overrides:0,state:0},contentChanged:false,details:[],omitted:0};
  // Disable rename detection: additions and removals remain explicit and paths use NUL separators.
  const items=git('diff','--cached','--name-status','--no-renames','-z','--',...groups.map(g=>`data/${g}`)).split('\0');
  let budget=0;

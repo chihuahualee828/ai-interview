@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,writeFileSync,mkdirSync,rmSync} from 'node:fs';
+import {mkdtempSync,writeFileSync,mkdirSync,rmSync,readFileSync,existsSync} from 'node:fs';
 import {tmpdir} from 'node:os';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {collectChanges,commitMessage} from '../scripts/lib/commit-summary';
 
@@ -31,7 +31,7 @@ test('summary reads the staged snapshot, excludes private files and skips state-
 });
 
 test('model message uses bounded input and Astra parameters; failures fall back',async()=>{
- const changes={counts:{questions:1,answers:0,sources:0,state:0},contentChanged:true,details:[{path:'data/questions/Q0001.json',status:'M',changes:{original:{before:'Old',after:'New'}}}],omitted:0};
+ const changes={counts:{questions:1,answers:0,sources:0,overrides:0,state:0},contentChanged:true,details:[{path:'data/questions/Q0001.json',status:'M',changes:{original:{before:'Old',after:'New'}}}],omitted:0};
  let calls=0;
  const message=await commitMessage(changes,{key:'test',model:'gpt-6-astra',request:async(_url,init)=>{
   calls++;const body=JSON.parse(String(init?.body));assert.equal(body.reasoning_effort,'low');assert.ok(body.max_completion_tokens);assert.equal(body.temperature,undefined);
@@ -44,7 +44,7 @@ test('model message uses bounded input and Astra parameters; failures fall back'
 });
 
 test('commit summary sends GPT-6.1 Sol compatible parameters',async()=>{
- const changes={counts:{questions:1,answers:0,sources:0,state:0},contentChanged:true,details:[],omitted:0};
+ const changes={counts:{questions:1,answers:0,sources:0,overrides:0,state:0},contentChanged:true,details:[],omitted:0};
  await commitMessage(changes,{key:'test',model:'gpt-6.1-sol',request:async(_url,init)=>{
   const body=JSON.parse(String(init?.body));
   assert.equal(body.max_completion_tokens,4096);
@@ -53,4 +53,19 @@ test('commit summary sends GPT-6.1 Sol compatible parameters',async()=>{
   assert.equal(body.temperature,undefined);
   return new Response(JSON.stringify({choices:[{finish_reason:'stop',message:{content:JSON.stringify({subject:'chore: update Q0001',body:'- Update Q0001.'})}}]}));
  }});
+});
+test('no-llm CLI summarizes override changes without fetching even when credentials exist',()=>{
+ const cwd=mkdtempSync(join(tmpdir(),'commit-summary-offline-'));
+ const git=(...args:string[])=>execFileSync('git',args,{cwd,stdio:'pipe'});
+ try {
+  git('init');git('config','user.name','Test');git('config','user.email','test@example.invalid');git('commit','--allow-empty','-m','initial');
+  mkdirSync(join(cwd,'data/overrides'),{recursive:true});
+  writeFileSync(join(cwd,'data/overrides/Q0001.json'),JSON.stringify({pin:true,answer:{locales:{en:{title:'Correction'}}}}));
+  git('add','data/overrides');
+  writeFileSync(join(cwd,'block-network.mjs'),"import fs from 'node:fs'; globalThis.fetch=async()=>{fs.writeFileSync('network-attempted','yes');throw new Error('Unexpected model call');};");
+  const destination=join(cwd,'summary.txt');
+  execFileSync(process.execPath,['--import',resolve('node_modules/tsx/dist/loader.mjs'),'--import',join(cwd,'block-network.mjs'),resolve('scripts/summarize-commit.ts'),destination,'--no-llm'],{cwd,env:{...process.env,LLM_API_KEY:'test-only',LLM_MODEL:'test-model'},stdio:'pipe'});
+  assert(!existsSync(join(cwd,'network-attempted')));
+  assert.match(readFileSync(destination,'utf8'),/Updated data files:.*1 overrides/);
+ } finally {rmSync(cwd,{recursive:true,force:true});}
 });
