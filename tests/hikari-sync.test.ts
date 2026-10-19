@@ -30,6 +30,7 @@ function fixture() {
  cpSync('lang',join(root,'lang'),{recursive:true});
  write(root,'.env','PRIVATE LOCAL SENTINEL');
  write(root,'src/app.ts','LOCAL APP SENTINEL');
+ write(root,'data/overrides/.gitkeep','');
  write(root,'data/state/generation.json',{Q0001:{status:'pending',attempts:4}});
  return {root,repository,git,commit,cleanup:()=>rmSync(temp,{recursive:true,force:true})};
 }
@@ -60,6 +61,7 @@ test('imports a pinned snapshot, retains exact answer status, and never imports 
   assert.equal(readFileSync(join(f.root,'.env'),'utf8'),'PRIVATE LOCAL SENTINEL');
   assert.equal(readFileSync(join(f.root,'src/app.ts'),'utf8'),'LOCAL APP SENTINEL');
   assert(!existsSync(join(f.root,'scripts/run-me.js')));
+  assert(existsSync(join(f.root,'data/overrides/.gitkeep')));
   assert.deepEqual(JSON.parse(readFileSync(join(f.root,'data/state/generation.json'),'utf8')),{Q0001:{status:'pending',attempts:4}});
   const first=files(f.root);await importSnapshot(f.root,snapshot);assert.deepEqual(files(f.root),first);
  } finally {f.cleanup();}

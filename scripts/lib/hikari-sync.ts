@@ -93,8 +93,10 @@ export async function importSnapshot(root:string,snapshot:Snapshot,validate=vali
    if(digest(text)!==previous?.overrides?.[path])localOverrides.set(path,text);
   }
   for(const dir of directories) {
-   await rm(join(stage,'data',dir),{recursive:true,force:true});
-   await mkdir(join(stage,'data',dir),{recursive:true});
+   const directory=join(stage,'data',dir);
+   await mkdir(directory,{recursive:true});
+   // Replace managed JSON only; retain local directory markers and documentation.
+   for(const name of await readdir(directory))if(name.endsWith('.json'))await rm(join(directory,name));
   }
   const overrides:Record<string,string>={};
   for(const [path,text] of snapshot.files) {
