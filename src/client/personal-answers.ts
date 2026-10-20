@@ -10,6 +10,16 @@ async function mount() {
  if (!root) return;
  const t = JSON.parse(root.dataset.labels!) as Messages['personal'];
  const $ = <T extends HTMLElement>(id: string) => document.getElementById(`personal-${id}`) as T;
+ const toggle = $<HTMLButtonElement>('toggle');
+ function expand(expanded: boolean) {
+  root!.hidden = !expanded;
+  toggle.setAttribute('aria-expanded', String(expanded));
+ }
+ toggle.disabled = false;
+ toggle.addEventListener('click', () => {
+  expand(root.hidden);
+  if (!root.hidden) root.scrollIntoView({block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+ });
  const body = $<HTMLTextAreaElement>('body'), status = $('status'), updated = $<HTMLTimeElement>('updated');
  const login = $<HTMLButtonElement>('login'), logout = $<HTMLButtonElement>('logout');
  const save = $<HTMLButtonElement>('save'), refresh = $<HTMLButtonElement>('refresh'), remove = $<HTMLButtonElement>('delete');
@@ -22,7 +32,7 @@ async function mount() {
  if (!client) return;
  const controller = new PersonalController(answerStore(client), root.dataset.question!, root.dataset.locale as Locale, render);
  let signingOut = false, signingIn = false, authMuted = false, editing = false, composing = false;
- let userId: string | null = null, editSession = 0, previewVersion = 0, previewBody: string | undefined;
+ let userId: string | null = null, editSession = 0, previewVersion = 0, previewBody: string | undefined, wasLoaded = false;
  function renderPreview() {
   const value = controller.loaded ? controller.body : '';
   if (previewBody === value) return;
@@ -45,9 +55,14 @@ async function mount() {
  function render() {
   if (userId !== controller.userId) {
    userId = controller.userId; editing = false; composing = false; editSession++;
+   wasLoaded = false; expand(false);
    previewBody = undefined; previewVersion++; preview.replaceChildren();
    height.restore(userId ? `recall-note-height:${new URL(import.meta.env.PUBLIC_SUPABASE_URL).hostname}:${basePath(import.meta.env.BASE_URL)}:${userId}:${root!.dataset.question}:${root!.dataset.locale}` : null);
   }
+  // Existing notes open after loading; empty notes stay closed until requested.
+  // Never hide a draft on save failure, or hide initial-load errors and retry controls.
+  if ((!wasLoaded && controller.loaded && controller.body.trim()) || (!controller.loaded && ['failed', 'required'].includes(controller.status))) expand(true);
+  wasLoaded = controller.loaded;
   if (body.value !== controller.body) body.value = controller.body;
   body.disabled = !controller.loaded || controller.busy || signingOut;
   body.readOnly = controller.status === 'required';

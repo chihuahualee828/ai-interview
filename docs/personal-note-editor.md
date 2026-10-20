@@ -4,7 +4,8 @@ The GitHub account controls sit at the top right of the study page. Personal ans
 
 ## Using notes
 
-- Sign in, then double-click the note section or choose **Edit note**. Keyboard users can focus the preview and press Enter or Space; touch users can use the Edit button.
+- Empty personal answers start collapsed. Use **My answer**, immediately before **Reveal answer**, to expand or collapse the section. Expanding scrolls to the notes just like revealing the reference answer, respecting reduced-motion preferences. Saved nonempty notes open automatically after loading without scrolling; collapsing a draft keeps it on the page without saving or discarding it. Load failures reveal the retry controls.
+- Sign in, expand **My answer**, then double-click the note section or choose **Edit note**. Keyboard users can focus the preview and press Enter or Space; touch users can use the Edit button.
 - **Ctrl/Cmd+Enter** or the **Save & close** button saves the source text to Supabase and renders the note. **Ctrl/Cmd+S**, while focus is in the textarea, saves without closing the editor. The editor closes after the server acknowledges the save. **Enter** and **Shift+Enter** insert newlines. Typing, waiting, and leaving the field do not save or render the draft.
 - Drag the handle below the note to change its height; keyboard users can focus it and use Up/Down (Home/End for the limits). Long notes scroll inside this area, while save controls stay outside it. The height is shared between edit and rendered modes.
 - Height is a device-local layout preference in localStorage, scoped to Supabase project, site base path, account, question, and language. Only a pixel height is stored—never note text. Clearing browser storage resets it. A different browser/device can use a different height; no Supabase migration is needed.
@@ -38,7 +39,7 @@ Malformed math remains readable. If the renderer fails to load, a plain-text fal
 ## Validation — 2026-10-20
 
 - Unit tests: **67 passed**, including explicit-save controller behavior and Markdown/math security tests.
-- Personal-note browser suite: **19 passed** in development and **19 passed** against the production build at `/ai-interview/`, using synthetic Supabase sessions and mocked requests.
+- Personal-note browser suite: **21 passed** in development and **21 passed** against the production build at `/ai-interview/`, using synthetic Supabase sessions and mocked requests. These include collapsed empty notes, delayed loading, draft-preserving disclosure, and saved-note reopening. The missing-Supabase-config browser test also passed across all three locales.
 - Data validation: **598 questions, 226 answers, 110 sources, 3 locales**.
 - Type check: **0 errors, 0 warnings**; two compatibility deprecation hints (`beforeunload.returnValue` and the IME `keyCode === 229` fallback).
 - Production build: **1,799 pages**, with synthetic public Supabase configuration.
