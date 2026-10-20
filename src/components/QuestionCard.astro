@@ -36,6 +36,7 @@ const shareUrl=publicSite?new URL(pathFor(locale,card.id),Astro.site).href:new U
  </div>
  <div class="reveal-controls">
   <button type="button" class="button button-quiet" id="hint-button" disabled aria-expanded="false" aria-controls="hint-panel"><Icon name="bulb" size={18}/><span>{t.hint}</span></button>
+  <button type="button" class="button button-quiet" id="personal-toggle" disabled aria-expanded="false" aria-controls="personal-answer"><Icon name="book" size={18}/><span>{t.personal.toggle}</span></button>
   <button type="button" class="button button-primary" id="answer-button" disabled aria-expanded="false" aria-controls="answer-panel"><Icon name="eye" size={18}/><span>{t.reveal}</span><Icon name="chevron" size={15}/></button>
  </div>
  <div id="hint-panel" class="hint-panel" hidden>

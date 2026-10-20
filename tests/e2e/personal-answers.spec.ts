@@ -19,9 +19,41 @@ async function cloud(page:Page, signedIn=true){
  if(signedIn) await page.addInitScript(({key,value})=>{if(!sessionStorage.getItem('seeded')){localStorage.setItem(key,JSON.stringify(value));sessionStorage.setItem('seeded','1');}},{key:storageKey,value:session()});
  return {writes,fail:(value:boolean)=>{fail=value;}};
 }
+async function openNotes(page:Page){
+ await expect(page.locator('#personal-edit')).toBeEnabled();
+ if(await page.locator('#personal-answer').isHidden()) await page.locator('#personal-toggle').click();
+}
+async function visitNotes(page:Page,url=start){await page.goto(url);await openNotes(page);}
+test('empty notes start collapsed; the adjacent button preserves drafts and saved notes open on reload',async({page})=>{
+ const mock=await cloud(page);await page.goto(start);
+ const panel=page.locator('#personal-answer'),toggle=page.locator('#personal-toggle');
+ await expect(page.locator('#personal-edit')).toBeEnabled();
+ await expect(panel).toBeHidden();await expect(toggle).toHaveAttribute('aria-expanded','false');
+ expect(await toggle.evaluate(el=>el.nextElementSibling?.id)).toBe('answer-button');
+ await page.locator('#answer-button').click();await expect(page.locator('#answer-panel')).toBeVisible();await expect(panel).toBeHidden();
+ await toggle.focus();await toggle.press('Enter');await expect(panel).toBeVisible();await expect(toggle).toHaveAttribute('aria-expanded','true');
+ await expect.poll(()=>panel.evaluate(el=>Math.abs(el.getBoundingClientRect().top-30))).toBeLessThan(5);
+ await toggle.click();await page.emulateMedia({reducedMotion:'reduce'});await toggle.click();
+ await expect.poll(()=>panel.evaluate(el=>Math.abs(el.getBoundingClientRect().top-30))).toBeLessThan(5);
+ await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('**Keep my draft**');
+ await toggle.click();await expect(panel).toBeHidden();expect(mock.writes).toEqual([]);
+ await toggle.click();await expect(page.locator('#personal-body')).toHaveValue('**Keep my draft**');await expect(page.locator('#personal-body')).toBeVisible();
+ await page.locator('#personal-save').click();await expect(page.locator('#personal-preview strong')).toHaveText('Keep my draft');
+ await page.reload();await expect(panel).toBeVisible();await expect(toggle).toHaveAttribute('aria-expanded','true');await expect(page.locator('#personal-preview strong')).toHaveText('Keep my draft');
+ await page.locator('#personal-logout').click();await expect(panel).toBeHidden();await expect(toggle).toHaveAttribute('aria-expanded','false');await expect(page.locator('#personal-body')).toHaveValue('');
+});
+test('manually expanded empty notes stay open when a delayed load finishes',async({page})=>{
+ await cloud(page);
+ let finish!:()=>void;const pending=new Promise<void>(resolve=>{finish=resolve;});
+ await page.route('**/rest/v1/personal_answers?**',async route=>{await pending;await route.fulfill({json:[]});});
+ await page.goto(start);await expect(page.locator('#personal-status')).toHaveText('Loading…');
+ await page.locator('#personal-toggle').click();await expect(page.locator('#personal-answer')).toBeVisible();
+ finish();await expect(page.locator('#personal-edit')).toBeEnabled();await expect(page.locator('#personal-answer')).toBeVisible();
+});
 test('signed-out browsing and contribution links work; login uses fixed callback and PKCE without extra scopes',async({page})=>{
  await cloud(page,false);await page.goto(start+'?tag=llm');
  await expect(page.locator('.site-header #personal-login')).toBeVisible();
+ await expect(page.locator('#personal-answer')).toBeHidden();await page.locator('#personal-toggle').click();await expect(page.locator('#personal-answer')).toBeVisible();
  await expect(page.locator('#personal-status')).toContainText('Sign in to save');await expect(page.locator('#personal-body')).toBeDisabled();
  await page.locator('#answer-button').click();await expect(page.locator('#answer-panel')).toBeVisible();await expect(page.locator('.contribute')).toBeVisible();
  const authRequest=page.waitForRequest(r=>r.url().includes('/auth/v1/authorize'));
@@ -31,7 +63,7 @@ test('signed-out browsing and contribution links work; login uses fixed callback
  expect(url.searchParams.get('redirect_to')).toBe(`http://127.0.0.1:4323${base}auth/callback/`);
 });
 test('double-click opens notes; the Save button submits Markdown/math and closes the editor',async({page})=>{
- const mock=await cloud(page);await page.goto(start);
+ const mock=await cloud(page);await visitNotes(page);
  const editor=page.locator('#personal-body'),preview=page.locator('#personal-preview');
  await expect(page.locator('#personal-edit')).toBeEnabled();await expect(editor).toBeHidden();
  await preview.dblclick();await expect(editor).toBeFocused();
@@ -45,7 +77,7 @@ test('double-click opens notes; the Save button submits Markdown/math and closes
  await page.locator('#personal-save').click();await expect(editor).toBeHidden();expect(mock.writes).toEqual([note]);
 });
 test('Enter inserts newlines without saving or rendering; IME confirmation does not submit; cancellation restores the saved note',async({page})=>{
- const mock=await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();const editor=page.locator('#personal-body');
+ const mock=await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();const editor=page.locator('#personal-body');
  await editor.fill('first');await editor.press('End');await editor.press('Enter');await editor.press('a');await editor.press('Shift+Enter');await editor.press('b');await expect(editor).toHaveValue('first\na\nb');
  await editor.dispatchEvent('compositionstart');await editor.dispatchEvent('keydown',{key:'Enter'});await editor.dispatchEvent('compositionend');
  await editor.dispatchEvent('keydown',{key:'Enter',isComposing:true});await editor.dispatchEvent('keydown',{key:'Enter',keyCode:229});await editor.dispatchEvent('keydown',{key:'Enter',repeat:true});
@@ -55,7 +87,7 @@ test('Enter inserts newlines without saving or rendering; IME confirmation does 
  page.once('dialog',d=>d.accept());await editor.press('Escape');await expect(editor).toBeHidden();await expect(page.locator('#personal-preview')).toContainText('first');expect(mock.writes).toEqual(['first\na\nb']);
 });
 test('save failures preserve the editor; retry, deletion and logout clear the right content',async({page})=>{
- const mock=await cloud(page);await page.goto(start);const editor=page.locator('#personal-body');await page.locator('#personal-edit').click();
+ const mock=await cloud(page);await visitNotes(page);const editor=page.locator('#personal-body');await page.locator('#personal-edit').click();
  mock.fail(true);await editor.fill('unsaved draft');await page.locator('#personal-save').click();await expect(page.locator('#personal-status')).toContainText('failed');await expect(editor).toBeVisible();await expect(editor).toHaveValue('unsaved draft');
  page.once('dialog',dialog=>dialog.dismiss());await page.locator('#next').click();await expect(page).toHaveURL(new RegExp('Q0001'));
  mock.fail(false);await page.locator('#personal-save').click();await expect(page.locator('#personal-status')).toHaveText('Saved');await expect(editor).toBeHidden();expect(mock.writes).toEqual(['unsaved draft']);
@@ -64,7 +96,7 @@ test('save failures preserve the editor; retry, deletion and logout clear the ri
  await expect.poll(()=>page.evaluate(key=>localStorage.getItem(key),storageKey)).toBeNull();
 });
 test('private Markdown blocks active HTML, unsafe links and remote images',async({page})=>{
- const mock=await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();
+ const mock=await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();
  const payload='<img src=x onerror="window.privateXss=true">\n\n![tracking](https://tracker.invalid/pixel)\n\n[bad](javascript:alert%281%29)\n\n$\\includegraphics{https://tracker.invalid/math}$\n\n[reference](https://example.com)';
  const remoteRequests:string[]=[];page.on('request',r=>{if(r.url().includes('tracker.invalid'))remoteRequests.push(r.url());});
  await page.locator('#personal-body').fill(payload);await page.locator('#personal-save').click();
@@ -73,10 +105,11 @@ test('private Markdown blocks active HTML, unsafe links and remote images',async
  expect(await page.evaluate(()=>Object.hasOwn(window,'privateXss'))).toBe(false);expect(remoteRequests).toEqual([]);expect(mock.writes).toEqual([payload]);
 });
 test('account switch clears the previous answer before the next account load',async({page})=>{
- await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('A secret');await page.locator('#personal-save').click();await expect(page.locator('#personal-status')).toHaveText('Saved');
+ await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('A secret');await page.locator('#personal-save').click();await expect(page.locator('#personal-status')).toHaveText('Saved');
  await page.route('**/rest/v1/personal_answers?**',async route=>{await new Promise(r=>setTimeout(r,400));await route.fulfill({json:[]});});
  await page.evaluate(({key,value})=>{localStorage.setItem(key,JSON.stringify(value));const channel=new BroadcastChannel(key);channel.postMessage({event:'SIGNED_IN',session:value});channel.close();},{key:storageKey,value:session(userB)});
  await expect(page.locator('#personal-body')).toHaveValue('');await expect(page.locator('#personal-body')).toBeEnabled();await expect(page.locator('#personal-preview')).not.toContainText('A secret');await expect(page.locator('#personal-editor')).toBeHidden();
+ await expect(page.locator('#personal-answer')).toBeHidden();await expect(page.locator('#personal-toggle')).toHaveAttribute('aria-expanded','false');
 });
 test('callback exchanges PKCE, scrubs URL and provider credentials, and restores locale/filters',async({page})=>{
  await cloud(page,false);await page.goto(start+'?tag=llm');await expect(page.locator('#personal-login')).toBeEnabled();
@@ -99,7 +132,7 @@ test('callback failure and malicious return path stay inside the static base',as
  await expect(page.locator('#callback-status')).toContainText('failed');await expect(page).toHaveURL(`http://127.0.0.1:4323${base}auth/callback/`);await expect(page.locator('#callback-return')).toHaveAttribute('href',start);
 });
 test('header account controls and long math notes fit narrow mobile screens',async({page})=>{
- await cloud(page);await page.setViewportSize({width:320,height:844});await page.goto(start);
+ await cloud(page);await page.setViewportSize({width:320,height:844});await visitNotes(page);
  await page.locator('#personal-edit').click();await expect(page.locator('#personal-body')).toBeVisible();
  await page.locator('#personal-body').fill('$$\n'+('a+'.repeat(100))+'b\n$$');await page.locator('#personal-save').click();await expect(page.locator('#personal-preview .katex')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -108,21 +141,21 @@ test('header account controls and long math notes fit narrow mobile screens',asy
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 test('expired authentication preserves unsaved text until explicit sign-out',async({page})=>{
- await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();
+ await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();
  await page.route('**/rest/v1/personal_answers?**',route=>route.fulfill({status:401,json:{code:'PGRST301',message:'JWT expired'}}));
  await page.locator('#personal-body').fill('copy this draft');await page.locator('#personal-save').click();
  await expect(page.locator('#personal-status')).toContainText('Sign in required');await expect(page.locator('#personal-body')).toHaveValue('copy this draft');await expect(page.locator('#personal-body')).toHaveAttribute('readonly','');await expect(page.locator('#personal-body')).toBeEnabled();await expect(page.locator('#personal-login')).toBeVisible();
  page.once('dialog',d=>d.accept());await page.locator('#personal-logout').click();await expect(page.locator('#personal-body')).toHaveValue('');
 });
 test('failed sign-out keeps private content hidden and offers a retry',async({page})=>{
- await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('private');await page.locator('#personal-save').click();await expect(page.locator('#personal-status')).toHaveText('Saved');
+ await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('private');await page.locator('#personal-save').click();await expect(page.locator('#personal-status')).toHaveText('Saved');
  await page.route('**/auth/v1/logout?**',route=>route.fulfill({status:400,json:{message:'test logout failure'}}));
  await page.locator('#personal-logout').click();await expect(page.locator('#personal-status')).toContainText('Sign-out could not');await expect(page.locator('#personal-body')).toHaveValue('');await expect(page.locator('#personal-body')).toBeDisabled();await expect(page.locator('#personal-logout')).toBeVisible();
  await page.route('**/auth/v1/logout?**',route=>route.fulfill({status:204}));await page.locator('#personal-logout').click();await expect(page.locator('#personal-status')).toContainText('Sign in to save');await expect.poll(()=>page.evaluate(key=>localStorage.getItem(key),storageKey)).toBeNull();
 });
 
 test('saving waits for acknowledgement and ignores repeated submit actions',async({page})=>{
- await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();
+ await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();
  let finish!:()=>void;const response=new Promise<void>(resolve=>{finish=resolve;});let writes=0;
  await page.route('**/rest/v1/personal_answers?**',async route=>{
   expect(route.request().method()).toBe('POST');writes++;await response;await route.fulfill({json:{body:'pending',updated_at:'2026-10-18T00:00:00Z'}});
@@ -151,7 +184,7 @@ test('late Markdown module loading cannot restore a note after sign-out',async({
  await cloud(page);let release!:()=>void,requested=false;
  const ready=new Promise<void>(resolve=>{release=resolve;});
  await page.route('**/*personal-markdown*',async route=>{requested=true;await ready;await route.continue();});
- await page.goto(start);await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('**private late render**');await page.locator('#personal-save').click();
+ await visitNotes(page);await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('**private late render**');await page.locator('#personal-save').click();
  await expect.poll(()=>requested).toBe(true);
  await page.locator('#personal-logout').click();await expect(page.locator('#personal-status')).toContainText('Sign in to save');
  const response=page.waitForResponse(r=>r.url().includes('personal-markdown'));release();await response;
@@ -159,7 +192,7 @@ test('late Markdown module loading cannot restore a note after sign-out',async({
 });
 
 test('cell shortcuts save without closing or save and render only inside the textarea',async({page})=>{
- const mock=await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();const editor=page.locator('#personal-body');
+ const mock=await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();const editor=page.locator('#personal-body');
  await editor.fill('**saved draft**');await editor.press('Control+s');await expect(page.locator('#personal-status')).toHaveText('Saved');await expect(editor).toBeVisible();await expect(editor).toBeFocused();await expect(page.locator('#personal-preview')).toBeHidden();expect(mock.writes).toEqual(['**saved draft**']);
  await editor.fill('**rendered note**');await editor.press('Control+Enter');await expect(editor).toBeHidden();await expect(page.locator('#personal-preview strong')).toHaveText('rendered note');
  await page.locator('#personal-edit').click();await editor.fill('Mac draft');await editor.press('Meta+s');await expect(page.locator('#personal-status')).toHaveText('Saved');await expect(editor).toBeVisible();
@@ -170,21 +203,21 @@ test('cell shortcuts save without closing or save and render only inside the tex
 test('note height resizes by pointer and keyboard and stays local to account, question and locale',async({page})=>{
  const mock=await cloud(page);
  await page.route('**/rest/v1/personal_answers?**',route=>route.fulfill({json:[]}));
- await page.goto(start);await expect(page.locator('#personal-edit')).toBeEnabled();const content=page.locator('#personal-content'),handle=page.locator('#personal-resize');
+ await visitNotes(page);await expect(page.locator('#personal-edit')).toBeEnabled();const content=page.locator('#personal-content'),handle=page.locator('#personal-resize');
  await expect(handle).toHaveAttribute('aria-valuenow','300');
  await handle.focus();await handle.press('ArrowDown');await expect(handle).toHaveAttribute('aria-valuenow','340');
  await handle.evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant'}));
  const box=await handle.boundingBox();await page.mouse.move(box!.x+box!.width/2,box!.y+box!.height/2);await page.mouse.down();await page.mouse.move(box!.x+box!.width/2,box!.y+box!.height/2+100,{steps:5});await page.mouse.up();await expect(handle).toHaveAttribute('aria-valuenow','440');
  const prefs=await page.evaluate(()=>Object.entries(localStorage).filter(([key])=>key.startsWith('recall-note-height:')));expect(prefs).toHaveLength(1);expect(prefs[0][1]).toBe('440');expect(mock.writes).toHaveLength(0);
- await page.reload();await expect(handle).toHaveAttribute('aria-valuenow','440');await page.locator('#personal-edit').click();await expect(content).toHaveCSS('height','440px');await page.locator('#personal-cancel').click();await expect(content).toHaveCSS('height','440px');
- await page.goto(`${base}en/questions/Q0002/`);await expect(page.locator('#personal-edit')).toBeEnabled();await expect(handle).toHaveAttribute('aria-valuenow','300');await handle.press('ArrowUp');await expect(handle).toHaveAttribute('aria-valuenow','260');
- await page.goto(`${base}ja/questions/Q0001/`);await expect(page.locator('#personal-edit')).toBeEnabled();await expect(handle).toHaveAttribute('aria-valuenow','300');
- await page.goto(start);await expect(handle).toHaveAttribute('aria-valuenow','440');
+ await page.reload();await openNotes(page);await expect(handle).toHaveAttribute('aria-valuenow','440');await page.locator('#personal-edit').click();await expect(content).toHaveCSS('height','440px');await page.locator('#personal-cancel').click();await expect(content).toHaveCSS('height','440px');
+ await visitNotes(page,`${base}en/questions/Q0002/`);await expect(page.locator('#personal-edit')).toBeEnabled();await expect(handle).toHaveAttribute('aria-valuenow','300');await handle.press('ArrowUp');await expect(handle).toHaveAttribute('aria-valuenow','260');
+ await visitNotes(page,`${base}ja/questions/Q0001/`);await expect(page.locator('#personal-edit')).toBeEnabled();await expect(handle).toHaveAttribute('aria-valuenow','300');
+ await visitNotes(page);await expect(handle).toHaveAttribute('aria-valuenow','440');
  await page.evaluate(({key,value})=>{localStorage.setItem(key,JSON.stringify(value));const channel=new BroadcastChannel(key);channel.postMessage({event:'SIGNED_IN',session:value});channel.close();},{key:storageKey,value:session(userB)});
  await expect(handle).toHaveAttribute('aria-valuenow','300');await expect(page).toHaveURL(new RegExp('Q0001'));
 });
 test('rendered notes scroll in their panel and reveal scrolls to the answer below them',async({page})=>{
- await cloud(page);await page.goto(start);await page.locator('#personal-edit').click();const editor=page.locator('#personal-body');
+ await cloud(page);await visitNotes(page);await page.locator('#personal-edit').click();const editor=page.locator('#personal-body');
  await editor.fill(Array.from({length:60},(_,i)=>`Paragraph ${i}`).join('\n\n'));await editor.press('Control+Enter');await expect(editor).toBeHidden();
  const content=page.locator('#personal-content');await expect.poll(()=>content.evaluate(el=>el.scrollHeight>el.clientHeight)).toBe(true);
  await content.evaluate(el=>{el.scrollTop=150;});expect(await content.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
@@ -205,7 +238,7 @@ test('invalid or unwritable height preferences do not block editing or saving',a
   const set=Storage.prototype.setItem;
   Storage.prototype.setItem=function(k,v){if(k.startsWith('recall-note-height:'))throw new DOMException('Full','QuotaExceededError');return set.call(this,k,v);};
  },key);
- await page.goto(start);await expect(page.locator('#personal-edit')).toBeEnabled();const handle=page.locator('#personal-resize');await expect(handle).toHaveAttribute('aria-valuenow','300');
+ await visitNotes(page);await expect(page.locator('#personal-edit')).toBeEnabled();const handle=page.locator('#personal-resize');await expect(handle).toHaveAttribute('aria-valuenow','300');
  await handle.press('End');await expect(handle).toHaveAttribute('aria-valuenow','1200');await handle.press('Home');await expect(handle).toHaveAttribute('aria-valuenow','160');
  await page.locator('#personal-edit').click();await page.locator('#personal-body').fill('still saves');await page.locator('#personal-body').press('Control+s');await expect(page.locator('#personal-status')).toHaveText('Saved');expect(mock.writes).toEqual(['still saves']);
 });

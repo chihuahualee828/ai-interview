@@ -111,6 +111,7 @@
   "shareCopied": "已複製連結",
   "shareCopyPrompt": "請複製這道題目的連結：",
   "personal": {
+    "toggle": "個人答案",
     "title": "我的答案 · 私人",
     "privacy": "私人筆記，儲存後可跨裝置同步。",
     "label": "你的私人答案（最多 30,000 字元）",
@@ -145,7 +146,6 @@
     "empty": "在這裡記錄你的思路、公式與範例。",
     "shortcuts": "Enter 換行 · Ctrl/Cmd+Enter 儲存並預覽 · Ctrl/Cmd+S 儲存 · Esc 取消",
     "formatHint": "支援 Markdown：**粗體**、清單、`程式碼`。行內公式使用 $x^2$，獨立公式以單獨一行的 $$ 前後包住。",
-    "placeholder": "## 我的思路\n\n- 核心概念\n- 取捨\n\n$O(n \\log n)$",
     "signingIn": "正在開啟 GitHub…",
     "signingOut": "正在登出…",
     "resize": "調整筆記高度：拖曳或使用上下方向鍵"

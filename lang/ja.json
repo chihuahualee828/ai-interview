@@ -111,6 +111,7 @@
   "shareCopied": "リンクをコピーしました",
   "shareCopyPrompt": "この問題のリンクをコピーしてください：",
   "personal": {
+    "toggle": "自分の回答",
     "title": "自分の回答 · 非公開",
     "privacy": "非公開のノート。保存すると端末間で同期されます。",
     "label": "非公開の回答（30,000 文字以内）",
@@ -145,7 +146,6 @@
     "empty": "考え方、数式、具体例をここに記録しましょう。",
     "shortcuts": "Enter：改行 · Ctrl/Cmd+Enter：保存して表示 · Ctrl/Cmd+S：保存 · Esc：キャンセル",
     "formatHint": "Markdown：**太字**、リスト、`コード`。数式は $x^2$、独立した数式は前後の行に $$ を記入。",
-    "placeholder": "## 自分の考え方\n\n- 重要な概念\n- トレードオフ\n\n$O(n \\log n)$",
     "signingIn": "GitHub を開いています…",
     "signingOut": "ログアウト中…",
     "resize": "ノートの高さを変更：ドラッグまたは上下矢印キー"

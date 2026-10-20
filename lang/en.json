@@ -111,6 +111,7 @@
   "shareCopied": "Link copied",
   "shareCopyPrompt": "Copy this question link:",
   "personal": {
+    "toggle": "My answer",
     "title": "My Answer · Private",
     "privacy": "Private notes, synced across devices when saved.",
     "label": "Your private answer (up to 30,000 characters)",
@@ -145,7 +146,6 @@
     "empty": "A space for your reasoning, formulas, and examples.",
     "shortcuts": "Enter: new line · Ctrl/Cmd+Enter: save & render · Ctrl/Cmd+S: save · Esc: cancel",
     "formatHint": "Markdown: **bold**, lists, `code`. Math: $x^2$ inline, or $$ on separate lines for a formula block.",
-    "placeholder": "## My approach\n\n- Key idea\n- Trade-off\n\n$O(n \\log n)$",
     "signingIn": "Opening GitHub…",
     "signingOut": "Signing out…",
     "resize": "Resize note height: drag or use the up/down arrow keys"
