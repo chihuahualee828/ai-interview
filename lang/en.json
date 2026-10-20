@@ -143,10 +143,11 @@
     "edit": "Edit note",
     "cancel": "Cancel",
     "empty": "A space for your reasoning, formulas, and examples.",
-    "shortcuts": "Enter for a new line · Save & close to finish · Esc to cancel",
+    "shortcuts": "Enter: new line · Ctrl/Cmd+Enter: save & render · Ctrl/Cmd+S: save · Esc: cancel",
     "formatHint": "Markdown: **bold**, lists, `code`. Math: $x^2$ inline, or $$ on separate lines for a formula block.",
     "placeholder": "## My approach\n\n- Key idea\n- Trade-off\n\n$O(n \\log n)$",
     "signingIn": "Opening GitHub…",
-    "signingOut": "Signing out…"
+    "signingOut": "Signing out…",
+    "resize": "Resize note height: drag or use the up/down arrow keys"
   }
 }

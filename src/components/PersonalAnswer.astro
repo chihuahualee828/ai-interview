@@ -9,10 +9,13 @@ const {id, locale, t} = Astro.props as {id: string; locale: Locale; t: Messages}
   <button id="personal-edit" type="button" class="button button-quiet" disabled aria-controls="personal-editor" aria-expanded="false">{t.personal.edit}</button>
  </div>
  <p id="personal-privacy">{t.personal.privacy}</p>
- <div id="personal-preview" class="personal-preview community-prose" tabindex="0" role="region" aria-labelledby="personal-title"><p>{t.personal.empty}</p></div>
+ <label id="personal-label" for="personal-body" hidden>{t.personal.label}</label>
+ <div id="personal-content" class="personal-content">
+  <div id="personal-preview" class="personal-preview community-prose" tabindex="0" role="region" aria-labelledby="personal-title"><p>{t.personal.empty}</p></div>
+  <textarea id="personal-body" rows="8" maxlength="30000" disabled hidden aria-describedby="personal-format-hint personal-shortcuts personal-status" autocomplete="off" placeholder={t.personal.placeholder}></textarea>
+ </div>
+ <div id="personal-resize" class="personal-resize" role="separator" tabindex="0" aria-label={t.personal.resize} title={t.personal.resize} aria-controls="personal-content" aria-orientation="horizontal" aria-valuemin="160" aria-valuemax="1200" aria-valuenow="300"><span></span></div>
  <div id="personal-editor" hidden>
-  <label for="personal-body">{t.personal.label}</label>
-  <textarea id="personal-body" rows="8" maxlength="30000" disabled aria-describedby="personal-format-hint personal-shortcuts personal-status" autocomplete="off" placeholder={t.personal.placeholder}></textarea>
   <p id="personal-shortcuts">{t.personal.shortcuts}</p>
   <p id="personal-format-hint">{t.personal.formatHint}</p>
   <div class="personal-actions">

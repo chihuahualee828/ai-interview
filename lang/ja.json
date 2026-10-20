@@ -143,10 +143,11 @@
     "edit": "ノートを編集",
     "cancel": "キャンセル",
     "empty": "考え方、数式、具体例をここに記録しましょう。",
-    "shortcuts": "Enter で改行 · 「保存して閉じる」で完了 · Esc でキャンセル",
+    "shortcuts": "Enter：改行 · Ctrl/Cmd+Enter：保存して表示 · Ctrl/Cmd+S：保存 · Esc：キャンセル",
     "formatHint": "Markdown：**太字**、リスト、`コード`。数式は $x^2$、独立した数式は前後の行に $$ を記入。",
     "placeholder": "## 自分の考え方\n\n- 重要な概念\n- トレードオフ\n\n$O(n \\log n)$",
     "signingIn": "GitHub を開いています…",
-    "signingOut": "ログアウト中…"
+    "signingOut": "ログアウト中…",
+    "resize": "ノートの高さを変更：ドラッグまたは上下矢印キー"
   }
 }

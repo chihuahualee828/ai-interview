@@ -2,6 +2,7 @@ import {getSupabase} from './supabase';
 import {PersonalController} from './personal-controller';
 import {answerStore} from './personal-store';
 import {basePath, returnKey, safeReturn} from './personal-security';
+import {setupNoteHeight} from './personal-layout';
 import type {Messages} from '../lib/i18n';
 import type {Locale} from '../lib/types';
 async function mount() {
@@ -14,6 +15,9 @@ async function mount() {
  const save = $<HTMLButtonElement>('save'), refresh = $<HTMLButtonElement>('refresh'), remove = $<HTMLButtonElement>('delete');
  const edit = $<HTMLButtonElement>('edit'), cancel = $<HTMLButtonElement>('cancel');
  const editor = $('editor'), preview = $('preview'), authStatus = $('auth-status');
+ const content = $('content');
+ const height = setupNoteHeight(content, $('resize'));
+ height.restore(null);
  const client = await getSupabase();
  if (!client) return;
  const controller = new PersonalController(answerStore(client), root.dataset.question!, root.dataset.locale as Locale, render);
@@ -42,11 +46,13 @@ async function mount() {
   if (userId !== controller.userId) {
    userId = controller.userId; editing = false; composing = false; editSession++;
    previewBody = undefined; previewVersion++; preview.replaceChildren();
+   height.restore(userId ? `recall-note-height:${new URL(import.meta.env.PUBLIC_SUPABASE_URL).hostname}:${basePath(import.meta.env.BASE_URL)}:${userId}:${root!.dataset.question}:${root!.dataset.locale}` : null);
   }
   if (body.value !== controller.body) body.value = controller.body;
   body.disabled = !controller.loaded || controller.busy || signingOut;
   body.readOnly = controller.status === 'required';
-  editor.hidden = !editing; preview.hidden = editing;
+  editor.hidden = body.hidden = $('label').hidden = !editing; preview.hidden = editing;
+  content.classList.toggle('is-editing', editing);
   preview.setAttribute('aria-busy', String(controller.status === 'loading'));
   edit.hidden = editing;
   edit.disabled = !controller.loaded || controller.busy || controller.status === 'required' || signingOut;
@@ -69,15 +75,15 @@ async function mount() {
  }
  function startEditing() {
   if (edit.disabled || editing) return;
-  editing = true; editSession++; render(); body.focus(); body.setSelectionRange(0, 0); body.scrollTop = 0;
+  editing = true; editSession++; render(); content.scrollTop = 0; body.focus(); body.setSelectionRange(0, 0); body.scrollTop = 0;
  }
- async function submit() {
+ async function submit(close = true) {
   if (!editing || save.disabled) return;
   const session = editSession;
   await controller.save();
   if (session !== editSession || !controller.loaded) return;
-  if (!controller.dirty && controller.status !== 'failed' && controller.status !== 'required') {
-   editing = false; render(); preview.focus();
+  if (close && !controller.dirty && controller.status !== 'failed' && controller.status !== 'required') {
+   editing = false; render(); content.scrollTop = 0; preview.focus({preventScroll: true});
   } else body.focus();
  }
  function cancelEditing() {
@@ -87,7 +93,7 @@ async function mount() {
  render();
  edit.addEventListener('click', startEditing);
  root.addEventListener('dblclick', event => {
-  if ((event.target as Element).closest('a,button,input,textarea,select,time')) return;
+  if ((event.target as Element).closest('a,button,input,textarea,select,time,[role="separator"]')) return;
   startEditing();
  });
  preview.addEventListener('keydown', event => {
@@ -101,8 +107,10 @@ async function mount() {
  body.addEventListener('keydown', event => {
   // Safari may end composition before keydown; 229 still identifies IME input.
   if (event.isComposing || composing || event.keyCode === 229) return;
-  // Enter uses the textarea's native newline behavior. Only the Save button submits.
-  if (event.key === 'Escape') { event.preventDefault(); cancelEditing(); }
+  if ((event.ctrlKey || event.metaKey) && !event.altKey && (event.key === 'Enter' || event.key.toLowerCase() === 's')) {
+   event.preventDefault();
+   if (!event.repeat) void submit(event.key === 'Enter');
+  } else if (event.key === 'Escape') { event.preventDefault(); cancelEditing(); }
  });
  save.addEventListener('click', () => void submit());
  cancel.addEventListener('click', cancelEditing);
