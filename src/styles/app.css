@@ -91,7 +91,7 @@ main{padding:43px 56px 24px;min-width:0;max-width:1130px;width:100%;margin:0 aut
 .personal-account .button:disabled{opacity:.6;cursor:wait}
 #personal-auth-status:not(:empty){position:absolute;right:0;top:100%;z-index:2;width:280px;max-width:85vw;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:14px;line-height:1.6}
 .personal-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.personal-preview{min-height:130px;padding:18px 20px;margin-top:16px;background:var(--surface);border:1px solid #d5dfd2;border-radius:8px;cursor:text}
+.personal-preview{min-height:130px;padding:12px 0;margin-top:16px;background:transparent;cursor:text}
 .personal-preview:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .personal-preview:empty{min-height:130px}
 .personal-preview p{white-space:pre-wrap;font-size:16px;line-height:1.9}
@@ -110,7 +110,6 @@ main{padding:43px 56px 24px;min-width:0;max-width:1130px;width:100%;margin:0 aut
  .personal-account{grid-column:2;grid-row:1;justify-self:end}
  .personal-account .button{padding:9px 10px;font-size:13px;gap:6px}
  .site-header .header-actions,.site-header .header-actions:has(.project-star){grid-column:1 / -1;grid-row:2;display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
- .personal-preview{padding:14px}
  .personal-preview p{font-size:15px}
 }
 .personal-answer button:disabled{opacity:.5;cursor:not-allowed}

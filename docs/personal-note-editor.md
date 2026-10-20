@@ -6,6 +6,7 @@ The GitHub account controls sit at the top right of the study page. Personal ans
 
 - Sign in, then double-click the note section or choose **Edit note**. Keyboard users can focus the preview and press Enter or Space; touch users can use the Edit button.
 - The **Save & close** button saves the source text to Supabase. The editor closes after the server acknowledges the save. **Enter** and **Shift+Enter** insert newlines. Typing, waiting, and leaving the field do not save or render the draft.
+- Revealing the reference answer opens it below personal notes and scrolls to it, respecting reduced-motion preferences. Rendered personal notes blend into the section background; the textarea retains its white background.
 - **Escape** or **Cancel** restores the saved text, with confirmation when there are unsaved changes. Save errors keep the draft open for retry. Unsaved changes still trigger the existing navigation warning.
 - Notes support Markdown headings, emphasis, lists, quotes, code, links, Unicode symbols, inline math with `$...$`, and display math with `$$` on separate lines. For example:
 

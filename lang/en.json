@@ -112,7 +112,7 @@
   "shareCopyPrompt": "Copy this question link:",
   "personal": {
     "title": "My Answer · Private",
-    "privacy": "Only your signed-in account can access this answer. It is stored in Supabase, separate from public community contributions.",
+    "privacy": "Private notes, synced across devices when saved.",
     "label": "Your private answer (up to 30,000 characters)",
     "signIn": "Sign in with GitHub",
     "signOut": "Sign out",
@@ -143,7 +143,6 @@
     "edit": "Edit note",
     "cancel": "Cancel",
     "empty": "A space for your reasoning, formulas, and examples.",
-    "editHint": "Double-click this section or choose Edit note to start.",
     "shortcuts": "Enter for a new line · Save & close to finish · Esc to cancel",
     "formatHint": "Markdown: **bold**, lists, `code`. Math: $x^2$ inline, or $$ on separate lines for a formula block.",
     "placeholder": "## My approach\n\n- Key idea\n- Trade-off\n\n$O(n \\log n)$",

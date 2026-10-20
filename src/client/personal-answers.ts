@@ -13,7 +13,7 @@ async function mount() {
  const login = $<HTMLButtonElement>('login'), logout = $<HTMLButtonElement>('logout');
  const save = $<HTMLButtonElement>('save'), refresh = $<HTMLButtonElement>('refresh'), remove = $<HTMLButtonElement>('delete');
  const edit = $<HTMLButtonElement>('edit'), cancel = $<HTMLButtonElement>('cancel');
- const editor = $('editor'), preview = $('preview'), editHint = $('edit-hint'), authStatus = $('auth-status');
+ const editor = $('editor'), preview = $('preview'), authStatus = $('auth-status');
  const client = await getSupabase();
  if (!client) return;
  const controller = new PersonalController(answerStore(client), root.dataset.question!, root.dataset.locale as Locale, render);
@@ -46,7 +46,7 @@ async function mount() {
   if (body.value !== controller.body) body.value = controller.body;
   body.disabled = !controller.loaded || controller.busy || signingOut;
   body.readOnly = controller.status === 'required';
-  editor.hidden = !editing; preview.hidden = editing; editHint.hidden = editing || !controller.loaded;
+  editor.hidden = !editing; preview.hidden = editing;
   preview.setAttribute('aria-busy', String(controller.status === 'loading'));
   edit.hidden = editing;
   edit.disabled = !controller.loaded || controller.busy || controller.status === 'required' || signingOut;
