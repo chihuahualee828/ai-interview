@@ -112,18 +112,18 @@
   "shareCopyPrompt": "Copy this question link:",
   "personal": {
     "title": "My Answer · Private",
-    "privacy": "Only your signed-in account can access this answer. It is stored in Supabase, separate from public community contributions.",
+    "privacy": "Private notes, synced across devices when saved.",
     "label": "Your private answer (up to 30,000 characters)",
     "signIn": "Sign in with GitHub",
     "signOut": "Sign out",
-    "save": "Save now",
+    "save": "Save & close",
     "retry": "Retry",
     "refresh": "Reload saved answer",
     "delete": "Delete my answer",
     "unavailable": "Personal sync unavailable. Public questions and community contributions are still available.",
     "signedOut": "Sign in to save your answer across devices.",
     "loading": "Loading…",
-    "ready": "Write your answer to save it privately.",
+    "ready": "Your private note is ready to edit.",
     "unsaved": "Unsaved changes",
     "saving": "Saving…",
     "saved": "Saved",
@@ -139,6 +139,15 @@
     "authFailed": "Sign-in failed or was canceled. Return to your question and try again.",
     "signOutFailed": "Sign-out could not be completed. Your answer is hidden; retry signing out when connected.",
     "callbackLoading": "Completing GitHub sign-in…",
-    "back": "Return to question"
+    "back": "Return to question",
+    "edit": "Edit note",
+    "cancel": "Cancel",
+    "empty": "A space for your reasoning, formulas, and examples.",
+    "shortcuts": "Enter: new line · Ctrl/Cmd+Enter: save & render · Ctrl/Cmd+S: save · Esc: cancel",
+    "formatHint": "Markdown: **bold**, lists, `code`. Math: $x^2$ inline, or $$ on separate lines for a formula block.",
+    "placeholder": "## My approach\n\n- Key idea\n- Trade-off\n\n$O(n \\log n)$",
+    "signingIn": "Opening GitHub…",
+    "signingOut": "Signing out…",
+    "resize": "Resize note height: drag or use the up/down arrow keys"
   }
 }

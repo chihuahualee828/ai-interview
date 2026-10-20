@@ -4,21 +4,30 @@ import type {Messages} from '../lib/i18n';
 const {id, locale, t} = Astro.props as {id: string; locale: Locale; t: Messages};
 ---
 <section class="personal-answer" id="personal-answer" aria-labelledby="personal-title" data-question={id} data-locale={locale} data-labels={JSON.stringify(t.personal)}>
- <h3 id="personal-title">{t.personal.title}</h3>
- <p id="personal-privacy">{t.personal.privacy}</p>
- <div class="personal-actions">
-  <button id="personal-login" type="button" class="button button-quiet" disabled>{t.personal.signIn}</button>
-  <button id="personal-logout" type="button" class="button button-quiet" hidden>{t.personal.signOut}</button>
+ <div class="personal-heading">
+  <h3 id="personal-title">{t.personal.title}</h3>
+  <button id="personal-edit" type="button" class="button button-quiet" disabled aria-controls="personal-editor" aria-expanded="false">{t.personal.edit}</button>
  </div>
- <label for="personal-body">{t.personal.label}</label>
- <textarea id="personal-body" rows="8" maxlength="30000" disabled aria-describedby="personal-privacy personal-status" autocomplete="off"></textarea>
+ <p id="personal-privacy">{t.personal.privacy}</p>
+ <label id="personal-label" for="personal-body" hidden>{t.personal.label}</label>
+ <div id="personal-content" class="personal-content">
+  <div id="personal-preview" class="personal-preview community-prose" tabindex="0" role="region" aria-labelledby="personal-title"><p>{t.personal.empty}</p></div>
+  <textarea id="personal-body" rows="8" maxlength="30000" disabled hidden aria-describedby="personal-format-hint personal-shortcuts personal-status" autocomplete="off" placeholder={t.personal.placeholder}></textarea>
+ </div>
+ <div id="personal-resize" class="personal-resize" role="separator" tabindex="0" aria-label={t.personal.resize} title={t.personal.resize} aria-controls="personal-content" aria-orientation="horizontal" aria-valuemin="160" aria-valuemax="1200" aria-valuenow="300"><span></span></div>
+ <div id="personal-editor" hidden>
+  <p id="personal-shortcuts">{t.personal.shortcuts}</p>
+  <p id="personal-format-hint">{t.personal.formatHint}</p>
+  <div class="personal-actions">
+   <button id="personal-save" type="button" class="button button-primary" disabled>{t.personal.save}</button>
+   <button id="personal-cancel" type="button" class="button button-quiet" disabled>{t.personal.cancel}</button>
+  </div>
+ </div>
  <p id="personal-status" role="status" aria-live="polite">{t.personal.unavailable}</p>
  <time id="personal-updated" hidden></time>
  <div class="personal-actions">
-  <button id="personal-save" type="button" class="button button-primary" disabled>{t.personal.save}</button>
-  <button id="personal-refresh" type="button" class="button button-quiet" disabled>{t.personal.refresh}</button>
+  <button id="personal-refresh" title={t.personal.conflicts} type="button" class="button button-quiet" disabled>{t.personal.refresh}</button>
   <button id="personal-delete" type="button" class="button button-quiet" disabled>{t.personal.delete}</button>
  </div>
- <p>{t.personal.conflicts}</p>
 </section>
 <script>import '../client/personal-answers';</script>

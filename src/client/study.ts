@@ -14,7 +14,12 @@ try{localStorage.setItem('recall-locale',meta.locale);}catch{}
 for(const [buttonId,panelId,closed,open] of [['hint-button','hint-panel','hint','hideHint'],['answer-button','answer-panel','reveal','hideAnswer']]){
  const button=$<HTMLButtonElement>('#'+buttonId),panel=$('#'+panelId);
  button.disabled=false;
- button.addEventListener('click',()=>{const expanded=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!expanded));panel.hidden=expanded;button.querySelector('span')!.textContent=meta.labels[expanded?closed:open];});
+ button.addEventListener('click',()=>{
+  const expanded=button.getAttribute('aria-expanded')==='true';
+  button.setAttribute('aria-expanded',String(!expanded));panel.hidden=expanded;
+  button.querySelector('span')!.textContent=meta.labels[expanded?closed:open];
+  if(panelId==='answer-panel'&&!expanded)panel.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+ });
 }
 $('#mobile-filter').addEventListener('click',()=>{const button=$('#mobile-filter');const open=button.getAttribute('aria-expanded')==='true';button.setAttribute('aria-expanded',String(!open));$('#filter-panel').classList.toggle('is-open',!open);if(!open)$('#filter-panel').scrollIntoView({block:'start',behavior:'smooth'});});
 $('#filter-close').addEventListener('click',()=>{$('#filter-panel').classList.remove('is-open');$('#mobile-filter').setAttribute('aria-expanded','false');$('#mobile-filter').focus();});

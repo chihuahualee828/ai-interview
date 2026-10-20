@@ -42,6 +42,7 @@ const shareUrl=publicSite?new URL(pathFor(locale,card.id),Astro.site).href:new U
   <div class="hint-title"><Icon name="bulb" size={18}/><h3>{t.hint}</h3></div>
   {answer ? <><p class="hint-intent">{answer.intent}</p><ol>{answer.hint.map(item=><li>{item}</li>)}</ol></> : <p>{t.pendingHint}</p>}
  </div>
+ <PersonalAnswer id={card.id} locale={locale} t={t}/>
  <div id="answer-panel" hidden>
   {answer ? <div class="answer-body">
    <div class="answer-intro"><p>{community?t.communityAnswer:t.answerTitle}</p><span>{community?t.communityUpdated:t.generated}<time datetime={answerDate}>{new Intl.DateTimeFormat(locale,{year:"numeric",month:"short",day:"numeric"}).format(new Date(answerDate!))}</time></span></div>
@@ -53,7 +54,6 @@ const shareUrl=publicSite?new URL(pathFor(locale,card.id),Astro.site).href:new U
   </div> : <div class="pending-answer"><Icon name="book" size={28}/><h3>{t.pendingTitle}</h3><p>{t.pendingDescription}</p></div>}
   <Sources card={card} t={t} locale={locale}/>
  </div>
- <PersonalAnswer id={card.id} locale={locale} t={t}/>
  <Contribute card={card} locale={locale}/>
  <div class="card-source-strip"><span class="source-dot"></span><a href={card.source.url} target="_blank" rel="noopener noreferrer">{t.originalQuestionLink}<Icon name="external" size={12}/></a><span class="source-separator">/</span><a href={card.source.repo} target="_blank" rel="noopener noreferrer">{t.sourceRepo}</a></div>
 </article>
